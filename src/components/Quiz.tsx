@@ -15,38 +15,27 @@ interface Message {
 interface QuizData {
   nome: string;
   telefone: string;
+  email: string;
 }
 
 export const Quiz = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Olá! Seja bem-vindo! 👋",
+      text: "Seja bem-vindo ao CF, para entrar no nosso grupo, responda as perguntas abaixo:",
       isBot: true,
       timestamp: new Date(),
     },
     {
       id: 2,
-      text: "Sou atendente virtual e vou iniciar seu atendimento...",
-      isBot: true,
-      timestamp: new Date(),
-    },
-    {
-      id: 3,
-      text: "Antes de iniciar, me conta mais sobre o que procura...",
-      isBot: true,
-      timestamp: new Date(),
-    },
-    {
-      id: 4,
-      text: "Você utiliza ergogênico hoje?",
+      text: "Você já frequenta a academia?",
       isBot: true,
       timestamp: new Date(),
     },
   ]);
   const [currentInput, setCurrentInput] = useState("");
-  const [step, setStep] = useState<"welcome" | "name" | "phone" | "webhook" | "completed">("welcome");
-  const [quizData, setQuizData] = useState<QuizData>({ nome: "", telefone: "" });
+  const [step, setStep] = useState<"welcome" | "name" | "phone" | "email" | "webhook" | "completed">("welcome");
+  const [quizData, setQuizData] = useState<QuizData>({ nome: "", telefone: "", email: "" });
   const [webhookUrl, setWebhookUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -88,7 +77,7 @@ export const Quiz = () => {
     addMessage(response, false);
     
     setTimeout(() => {
-      addMessage("Legal, você faz que tipo de uso?", true);
+      addMessage("Perfeito! Agora preciso do seu nome:", true);
       setStep("name");
     }, 1000);
   };
@@ -106,6 +95,15 @@ export const Quiz = () => {
 
       case "phone":
         setQuizData((prev) => ({ ...prev, telefone: userInput }));
+        addMessage(
+          "Ótimo! Agora preciso do seu email:",
+          true
+        );
+        setStep("email");
+        break;
+
+      case "email":
+        setQuizData((prev) => ({ ...prev, email: userInput }));
         addMessage(
           "Perfeito! Agora preciso da URL do webhook do seu n8n para enviar os dados:",
           true
@@ -134,6 +132,7 @@ export const Quiz = () => {
       const dataToSend = {
         nome: quizData.nome,
         telefone: quizData.telefone,
+        email: quizData.email,
         timestamp: new Date().toISOString(),
         origem: "Quiz Lovable",
       };
@@ -185,31 +184,19 @@ export const Quiz = () => {
     setMessages([
       {
         id: 1,
-        text: "Olá! Seja bem-vindo! 👋",
+        text: "Seja bem-vindo ao CF, para entrar no nosso grupo, responda as perguntas abaixo:",
         isBot: true,
         timestamp: new Date(),
       },
       {
         id: 2,
-        text: "Sou atendente virtual e vou iniciar seu atendimento...",
-        isBot: true,
-        timestamp: new Date(),
-      },
-      {
-        id: 3,
-        text: "Antes de iniciar, me conta mais sobre o que procura...",
-        isBot: true,
-        timestamp: new Date(),
-      },
-      {
-        id: 4,
-        text: "Você utiliza ergogênico hoje?",
+        text: "Você já frequenta a academia?",
         isBot: true,
         timestamp: new Date(),
       },
     ]);
     setStep("welcome");
-    setQuizData({ nome: "", telefone: "" });
+    setQuizData({ nome: "", telefone: "", email: "" });
     setWebhookUrl("");
     setCurrentInput("");
   };
@@ -288,21 +275,15 @@ export const Quiz = () => {
                 <div className="flex flex-col gap-2 max-w-[80%]">
                   <Button
                     onClick={() => handleButtonClick("SIM")}
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2 rounded-full"
                   >
                     SIM
                   </Button>
                   <Button
-                    onClick={() => handleButtonClick("TPC")}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full"
+                    onClick={() => handleButtonClick("NÃO")}
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-2 rounded-full"
                   >
-                    TPC
-                  </Button>
-                  <Button
-                    onClick={() => handleButtonClick("BLAST AND CRUISE")}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full"
-                  >
-                    BLAST AND CRUISE
+                    NÃO
                   </Button>
                 </div>
               </div>
@@ -321,7 +302,9 @@ export const Quiz = () => {
                   step === "name"
                     ? "Digite seu nome..."
                     : step === "phone"
-                    ? "Digite seu telefone..."
+                    ? "Digite seu número de WhatsApp..."
+                    : step === "email"
+                    ? "Digite seu email..."
                     : "Cole a URL do webhook do n8n..."
                 }
                 className="flex-1 bg-input border-border text-card-foreground placeholder:text-muted-foreground"

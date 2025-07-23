@@ -8,38 +8,38 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 75% 48%;
+    --background: 0 0% 5%;
     --foreground: 0 0% 100%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 75% 48%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 75% 48%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
 
     --primary: 0 0% 100%;
-    --primary-foreground: 0 75% 48%;
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 0 75% 42%;
+    --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 75% 52%;
-    --muted-foreground: 0 0% 95%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 0 75% 42%;
+    --accent: 0 0% 15%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 100%;
-    --input: 0 0% 100%;
-    --ring: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 30%;
 
     /* Chat specific variables */
-    --chat-bot-bg: 0 0% 100%;
-    --chat-user-bg: 0 75% 42%;
-    --chat-shadow: 0 10px 30px -10px hsl(0 0% 0% / 0.3);
+    --chat-bot-bg: 0 0% 15%;
+    --chat-user-bg: 0 0% 20%;
+    --chat-shadow: 0 10px 30px -10px hsl(0 0% 0% / 0.5);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
