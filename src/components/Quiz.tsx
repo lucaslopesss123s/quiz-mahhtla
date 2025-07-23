@@ -21,13 +21,31 @@ export const Quiz = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Olá! Seja bem-vindo! 👋 Para começar, qual é o seu nome?",
+      text: "Olá! Seja bem-vindo! 👋",
+      isBot: true,
+      timestamp: new Date(),
+    },
+    {
+      id: 2,
+      text: "Sou atendente virtual e vou iniciar seu atendimento...",
+      isBot: true,
+      timestamp: new Date(),
+    },
+    {
+      id: 3,
+      text: "Antes de iniciar, me conta mais sobre o que procura...",
+      isBot: true,
+      timestamp: new Date(),
+    },
+    {
+      id: 4,
+      text: "Você utiliza ergogênico hoje?",
       isBot: true,
       timestamp: new Date(),
     },
   ]);
   const [currentInput, setCurrentInput] = useState("");
-  const [step, setStep] = useState<"name" | "phone" | "webhook" | "completed">("name");
+  const [step, setStep] = useState<"welcome" | "name" | "phone" | "webhook" | "completed">("welcome");
   const [quizData, setQuizData] = useState<QuizData>({ nome: "", telefone: "" });
   const [webhookUrl, setWebhookUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +81,15 @@ export const Quiz = () => {
     // Simulate typing delay
     setTimeout(() => {
       handleBotResponse(userMessage);
+    }, 1000);
+  };
+
+  const handleButtonClick = (response: string) => {
+    addMessage(response, false);
+    
+    setTimeout(() => {
+      addMessage("Legal, você faz que tipo de uso?", true);
+      setStep("name");
     }, 1000);
   };
 
@@ -158,12 +185,30 @@ export const Quiz = () => {
     setMessages([
       {
         id: 1,
-        text: "Olá! Seja bem-vindo! 👋 Para começar, qual é o seu nome?",
+        text: "Olá! Seja bem-vindo! 👋",
+        isBot: true,
+        timestamp: new Date(),
+      },
+      {
+        id: 2,
+        text: "Sou atendente virtual e vou iniciar seu atendimento...",
+        isBot: true,
+        timestamp: new Date(),
+      },
+      {
+        id: 3,
+        text: "Antes de iniciar, me conta mais sobre o que procura...",
+        isBot: true,
+        timestamp: new Date(),
+      },
+      {
+        id: 4,
+        text: "Você utiliza ergogênico hoje?",
         isBot: true,
         timestamp: new Date(),
       },
     ]);
-    setStep("name");
+    setStep("welcome");
     setQuizData({ nome: "", telefone: "" });
     setWebhookUrl("");
     setCurrentInput("");
@@ -236,12 +281,38 @@ export const Quiz = () => {
                 </div>
               </div>
             )}
+            
+            {/* Botões de resposta para a primeira pergunta */}
+            {step === "welcome" && (
+              <div className="flex justify-end">
+                <div className="flex flex-col gap-2 max-w-[80%]">
+                  <Button
+                    onClick={() => handleButtonClick("SIM")}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full"
+                  >
+                    SIM
+                  </Button>
+                  <Button
+                    onClick={() => handleButtonClick("TPC")}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full"
+                  >
+                    TPC
+                  </Button>
+                  <Button
+                    onClick={() => handleButtonClick("BLAST AND CRUISE")}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full"
+                  >
+                    BLAST AND CRUISE
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           <div ref={messagesEndRef} />
         </div>
 
         <div className="p-4 border-t border-border bg-card rounded-b-lg">
-          {step !== "completed" ? (
+          {step !== "completed" && step !== "welcome" ? (
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
                 value={currentInput}
@@ -266,14 +337,14 @@ export const Quiz = () => {
                 <Send className="w-4 h-4" />
               </Button>
             </form>
-          ) : (
+          ) : step === "completed" ? (
             <Button
               onClick={resetQuiz}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Começar Novo Quiz
             </Button>
-          )}
+          ) : null}
         </div>
       </Card>
     </div>
