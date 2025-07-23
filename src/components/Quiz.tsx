@@ -19,20 +19,8 @@ interface QuizData {
 }
 
 export const Quiz = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: "Seja bem-vindo ao CF, para entrar no nosso grupo, responda as perguntas abaixo:",
-      isBot: true,
-      timestamp: new Date(),
-    },
-    {
-      id: 2,
-      text: "Você já frequenta a academia?",
-      isBot: true,
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
   const [currentInput, setCurrentInput] = useState("");
   const [step, setStep] = useState<"welcome" | "name" | "phone" | "email" | "webhook" | "completed">("welcome");
   const [quizData, setQuizData] = useState<QuizData>({ nome: "", telefone: "", email: "" });
@@ -47,7 +35,29 @@ export const Quiz = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isTyping]);
+
+  // Inicializar o chat com animação
+  useEffect(() => {
+    const initializeChat = async () => {
+      setIsTyping(true);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      addMessage("Seja bem-vindo ao CF, para entrar no nosso grupo, responda as perguntas abaixo:", true);
+      setIsTyping(false);
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsTyping(true);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      addMessage("Você já frequenta a academia?", true);
+      setIsTyping(false);
+    };
+
+    if (messages.length === 0) {
+      initializeChat();
+    }
+  }, []);
 
   const addMessage = (text: string, isBot: boolean) => {
     const newMessage: Message = {
@@ -73,16 +83,21 @@ export const Quiz = () => {
     }, 1000);
   };
 
-  const handleButtonClick = (response: string) => {
+  const handleButtonClick = async (response: string) => {
     addMessage(response, false);
     
-    setTimeout(() => {
-      addMessage("Perfeito! Agora preciso do seu nome:", true);
-      setStep("name");
-    }, 1000);
+    setIsTyping(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    addMessage("Perfeito! Agora preciso do seu nome:", true);
+    setIsTyping(false);
+    setStep("name");
   };
 
   const handleBotResponse = async (userInput: string) => {
+    setIsTyping(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     switch (step) {
       case "name":
         setQuizData((prev) => ({ ...prev, nome: userInput }));
@@ -123,6 +138,8 @@ export const Quiz = () => {
       default:
         break;
     }
+    
+    setIsTyping(false);
   };
 
   const sendToWebhook = async (webhookUrl: string) => {
@@ -229,8 +246,8 @@ export const Quiz = () => {
                       <Bot className="w-4 h-4 text-secondary" />
                     </div>
                   )}
-                  <div
-                    className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                   <div
+                    className={`px-4 py-2 rounded-lg transition-all duration-300 animate-fade-in ${
                       message.isBot
                         ? "bg-[var(--chat-bot-bg)] text-card-foreground"
                         : "bg-[var(--chat-user-bg)] text-accent-foreground"
@@ -252,8 +269,8 @@ export const Quiz = () => {
                 </div>
               </div>
             ))}
-            {isLoading && (
-              <div className="flex justify-start">
+            {(isLoading || isTyping) && (
+              <div className="flex justify-start animate-fade-in">
                 <div className="flex items-start gap-2">
                   <div className="w-8 h-8 rounded-full bg-[var(--chat-bot-bg)] flex items-center justify-center">
                     <Bot className="w-4 h-4 text-secondary" />
