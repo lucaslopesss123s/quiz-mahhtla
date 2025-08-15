@@ -15,17 +15,17 @@ interface Message {
 interface QuizData {
   nome: string;
   telefone: string;
-  email: string;
 }
 
 export const Quiz = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [currentInput, setCurrentInput] = useState("");
-  const [step, setStep] = useState<"welcome" | "name" | "phone" | "email" | "webhook" | "completed">("welcome");
-  const [quizData, setQuizData] = useState<QuizData>({ nome: "", telefone: "", email: "" });
-  const [webhookUrl, setWebhookUrl] = useState("");
+  const [step, setStep] = useState<"welcome" | "name" | "phone" | "completed">("welcome");
+  const [quizData, setQuizData] = useState<QuizData>({ nome: "", telefone: "" });
+  const webhookUrl = "https://n8n.lockpainel.shop/webhook/quiz";
   const [isLoading, setIsLoading] = useState(false);
+  const [showButtons, setShowButtons] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -52,6 +52,7 @@ export const Quiz = () => {
       
       addMessage("Você já frequenta a academia?", true);
       setIsTyping(false);
+      setShowButtons(true);
     };
 
     if (messages.length === 0) {
@@ -67,6 +68,32 @@ export const Quiz = () => {
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, newMessage]);
+  };
+
+  const formatPhoneNumber = (value: string) => {
+    // Remove todos os caracteres não numéricos
+    const numbers = value.replace(/\D/g, '');
+    
+    // Aplica a máscara (XX) XXXXX-XXXX
+    if (numbers.length <= 2) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    } else {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    if (step === "phone") {
+      // Aplica a máscara apenas para o campo de telefone
+      const formattedValue = formatPhoneNumber(value);
+      setCurrentInput(formattedValue);
+    } else {
+      setCurrentInput(value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,6 +112,7 @@ export const Quiz = () => {
 
   const handleButtonClick = async (response: string) => {
     addMessage(response, false);
+    setShowButtons(false);
     
     setIsTyping(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -109,30 +137,21 @@ export const Quiz = () => {
         break;
 
       case "phone":
-        setQuizData((prev) => ({ ...prev, telefone: userInput }));
+        // Remove formatação do telefone antes de salvar
+        const telefoneOriginal = userInput.replace(/\D/g, '');
+        console.log("Salvando telefone:", telefoneOriginal);
+        
+        // Atualiza o estado e envia os dados
+        const dadosAtualizados = { ...quizData, telefone: telefoneOriginal };
+        setQuizData(dadosAtualizados);
+        
         addMessage(
-          "Ótimo! Agora preciso do seu email:",
+          "✅ Perfeito! Aguarde um momento vou te enviar o link do grupo.",
           true
         );
-        setStep("email");
-        break;
-
-      case "email":
-        setQuizData((prev) => ({ ...prev, email: userInput }));
-        addMessage(
-          "Perfeito! Agora preciso da URL do webhook do seu n8n para enviar os dados:",
-          true
-        );
-        setStep("webhook");
-        break;
-
-      case "webhook":
-        setWebhookUrl(userInput);
-        addMessage(
-          "Ótimo! Agora vou enviar seus dados para o n8n. Aguarde um momento...",
-          true
-        );
-        await sendToWebhook(userInput);
+        
+        // Envia os dados usando os valores atualizados diretamente
+        await sendToWebhookWithData(dadosAtualizados);
         break;
 
       default:
@@ -142,42 +161,129 @@ export const Quiz = () => {
     setIsTyping(false);
   };
 
-  const sendToWebhook = async (webhookUrl: string) => {
+  const sendToWebhookWithData = async (dados: QuizData) => {
     setIsLoading(true);
     
     try {
-      const dataToSend = {
-        nome: quizData.nome,
-        telefone: quizData.telefone,
-        email: quizData.email,
-        timestamp: new Date().toISOString(),
-        origem: "Quiz Lovable",
-      };
+      // Debug: verificar dados coletados
+      console.log("Dados coletados:", dados);
+      console.log("Nome:", dados.nome);
+      console.log("Telefone:", dados.telefone);
+      
+      const formData = new FormData();
+      formData.append('form_field-name', dados.nome);
+      formData.append('form_field-whatsapp', dados.telefone);
+      formData.append('form_id', '693eed7');
+      formData.append('form_name', 'New Form');
 
-      console.log("Enviando dados para webhook:", dataToSend);
+      console.log("Enviando dados para webhook:", {
+        'form_field-name': dados.nome,
+        'form_field-whatsapp': dados.telefone,
+        'form_id': '693eed7',
+        'form_name': 'New Form'
+      });
 
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          'Accept': 'application/json',
         },
-        mode: "no-cors",
-        body: JSON.stringify(dataToSend),
+        body: formData,
       });
 
-      // Como estamos usando no-cors, não podemos verificar o status da resposta
-      setTimeout(() => {
-        addMessage(
-          `✅ Dados enviados com sucesso! Obrigado ${quizData.nome}, seus dados foram registrados em nossa planilha!`,
-          true
-        );
-        setStep("completed");
-        
-        toast({
-          title: "Sucesso!",
-          description: "Dados enviados para o n8n com sucesso!",
-        });
-      }, 1500);
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (response.ok) {
+          setTimeout(() => {
+            setStep("completed");
+            setIsLoading(false);
+            
+            toast({
+              title: "Sucesso!",
+              description: "Dados enviados para o n8n com sucesso!",
+            });
+          }, 1500);
+        } else {
+         console.error('Erro na resposta:', response.status, response.statusText);
+         addMessage(
+           `❌ Erro ao enviar dados. Status: ${response.status}. Tente novamente.`,
+           true
+         );
+         setIsLoading(false);
+       }
+
+     } catch (error) {
+       console.error("Erro ao enviar dados:", error);
+       addMessage(
+         "❌ Erro ao enviar dados. Verifique sua conexão e tente novamente.",
+         true
+       );
+       setIsLoading(false);
+       
+       toast({
+         title: "Erro!",
+         description: "Falha ao enviar dados para o n8n.",
+         variant: "destructive",
+       });
+     }
+   };
+
+  const sendToWebhook = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Debug: verificar dados coletados
+      console.log("Dados coletados:", quizData);
+      console.log("Nome:", quizData.nome);
+      console.log("Telefone:", quizData.telefone);
+      
+      const formData = new FormData();
+      formData.append('form_field-name', quizData.nome);
+      formData.append('form_field-whatsapp', quizData.telefone);
+      formData.append('form_id', '693eed7');
+      formData.append('form_name', 'New Form');
+
+      console.log("Enviando dados para webhook:", {
+        'form_field-name': quizData.nome,
+        'form_field-whatsapp': quizData.telefone,
+        'form_id': '693eed7',
+        'form_name': 'New Form'
+      });
+
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          'Accept': 'application/json',
+        },
+        body: formData,
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (response.ok) {
+         setTimeout(() => {
+           addMessage(
+             `✅ Dados enviados com sucesso! Obrigado ${quizData.nome}, seus dados foram registrados em nossa planilha!`,
+             true
+           );
+           setStep("completed");
+           setIsLoading(false);
+           
+           toast({
+             title: "Sucesso!",
+             description: "Dados enviados para o n8n com sucesso!",
+           });
+         }, 1500);
+       } else {
+         console.error('Erro na resposta:', response.status, response.statusText);
+         addMessage(
+           `❌ Erro ao enviar dados. Status: ${response.status}. Tente novamente.`,
+           true
+         );
+         setIsLoading(false);
+       }
 
     } catch (error) {
       console.error("Erro ao enviar webhook:", error);
@@ -213,27 +319,26 @@ export const Quiz = () => {
       },
     ]);
     setStep("welcome");
-    setQuizData({ nome: "", telefone: "", email: "" });
-    setWebhookUrl("");
+    setQuizData({ nome: "", telefone: "" });
     setCurrentInput("");
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md mx-auto shadow-[var(--chat-shadow)] border-2 border-border">
-        <div className="bg-card rounded-t-lg p-4 border-b border-border">
+    <div className="min-h-screen bg-gray-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-md mx-auto bg-gray-900 rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-gray-900 text-white p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-              <Bot className="w-6 h-6 text-secondary-foreground" />
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <Bot className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-card-foreground">Quiz Assistant</h3>
-              <p className="text-sm text-muted-foreground">Online agora</p>
+              <h3 className="font-semibold text-white">Assistente Zollim</h3>
+              <p className="text-sm text-white/80">Online agora</p>
             </div>
           </div>
         </div>
 
-        <div className="h-96 overflow-y-auto p-4 bg-card">
+        <div className="h-96 overflow-y-auto p-4 bg-gray-900">
           <div className="space-y-4">
             {messages.map((message) => (
               <div
@@ -242,15 +347,15 @@ export const Quiz = () => {
               >
                 <div className="flex items-start gap-2 max-w-[80%]">
                   {message.isBot && (
-                    <div className="w-8 h-8 rounded-full bg-[var(--chat-bot-bg)] flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-4 h-4 text-secondary" />
+                    <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-4 h-4 text-white" />
                     </div>
                   )}
                    <div
-                    className={`px-4 py-2 rounded-lg transition-all duration-300 animate-fade-in ${
+                    className={`px-4 py-3 rounded-2xl shadow-sm transition-all duration-300 animate-fade-in ${
                       message.isBot
-                        ? "bg-[var(--chat-bot-bg)] text-card-foreground"
-                        : "bg-[var(--chat-user-bg)] text-accent-foreground"
+                        ? "bg-white text-gray-800 border border-gray-200"
+                        : "bg-green-600 text-white"
                     }`}
                   >
                     <p className="text-sm">{message.text}</p>
@@ -262,8 +367,8 @@ export const Quiz = () => {
                     </p>
                   </div>
                   {!message.isBot && (
-                    <div className="w-8 h-8 rounded-full bg-[var(--chat-user-bg)] flex items-center justify-center flex-shrink-0">
-                      <User className="w-4 h-4 text-accent-foreground" />
+                    <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-white" />
                     </div>
                   )}
                 </div>
@@ -275,7 +380,7 @@ export const Quiz = () => {
                   <div className="w-8 h-8 rounded-full bg-[var(--chat-bot-bg)] flex items-center justify-center">
                     <Bot className="w-4 h-4 text-secondary" />
                   </div>
-                  <div className="bg-[var(--chat-bot-bg)] px-4 py-2 rounded-lg">
+                  <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl shadow-sm">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-secondary rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
@@ -287,18 +392,18 @@ export const Quiz = () => {
             )}
             
             {/* Botões de resposta para a primeira pergunta */}
-            {step === "welcome" && (
-              <div className="flex justify-end">
-                <div className="flex flex-col gap-2 max-w-[80%]">
+            {showButtons && step === "welcome" && (
+              <div className="flex justify-center">
+                <div className="flex gap-3 max-w-[80%]">
                   <Button
                     onClick={() => handleButtonClick("SIM")}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2 rounded-full"
+                    className="bg-green-600 text-white hover:bg-green-700 px-6 py-2 rounded-full"
                   >
                     SIM
                   </Button>
                   <Button
                     onClick={() => handleButtonClick("NÃO")}
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-2 rounded-full"
+                    className="bg-red-600 text-white hover:bg-red-700 px-6 py-2 rounded-full"
                   >
                     NÃO
                   </Button>
@@ -309,22 +414,18 @@ export const Quiz = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-4 border-t border-border bg-card rounded-b-lg">
+        <div className="p-4 border-t border-gray-700 bg-gray-900">
           {step !== "completed" && step !== "welcome" ? (
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
                 value={currentInput}
-                onChange={(e) => setCurrentInput(e.target.value)}
+                onChange={handleInputChange}
                 placeholder={
                   step === "name"
                     ? "Digite seu nome..."
-                    : step === "phone"
-                    ? "Digite seu número de WhatsApp..."
-                    : step === "email"
-                    ? "Digite seu email..."
-                    : "Cole a URL do webhook do n8n..."
+                    : "Digite seu número de WhatsApp..."
                 }
-                className="flex-1 bg-input border-border text-card-foreground placeholder:text-muted-foreground"
+                className="flex-1 bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
                 disabled={isLoading}
               />
               <Button 
@@ -332,7 +433,7 @@ export const Quiz = () => {
                 size="icon" 
                 variant="default"
                 disabled={!currentInput.trim() || isLoading}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="bg-green-600 text-white hover:bg-green-700"
               >
                 <Send className="w-4 h-4" />
               </Button>
@@ -340,13 +441,13 @@ export const Quiz = () => {
           ) : step === "completed" ? (
             <Button
               onClick={resetQuiz}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              className="w-full bg-green-600 text-white hover:bg-green-700"
             >
-              Começar Novo Quiz
+              Acessar Grupo do WhatsApp
             </Button>
           ) : null}
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
