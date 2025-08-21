@@ -130,7 +130,7 @@ export const Quiz = () => {
       case "name":
         setQuizData((prev) => ({ ...prev, nome: userInput }));
         addMessage(
-          `Prazer em conhecê-lo, ${userInput}! 😊 Agora, pode me informar seu telefone?`,
+          `✅ Prazer em te conhecer meu galo, ${userInput}! Me informar seu telefone abaixo para te adicionar no grupo:`,
           true
         );
         setStep("phone");
@@ -328,8 +328,8 @@ export const Quiz = () => {
       <div className="w-full max-w-md mx-auto bg-gray-900 rounded-lg shadow-lg overflow-hidden">
         <div className="bg-gray-900 text-white p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <Bot className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+              <img src="/profile-image.jpeg" alt="Assistente" className="w-full h-full object-cover" />
             </div>
             <div>
               <h3 className="font-semibold text-white">Assistente Zollim</h3>
@@ -347,8 +347,8 @@ export const Quiz = () => {
               >
                 <div className="flex items-start gap-2 max-w-[80%]">
                   {message.isBot && (
-                    <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <img src="/profile-image.jpeg" alt="Assistente" className="w-full h-full object-cover" />
                     </div>
                   )}
                    <div
