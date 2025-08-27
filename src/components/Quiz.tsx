@@ -332,7 +332,7 @@ export const Quiz = () => {
               <img src="/profile-image.jpeg" alt="Assistente" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">Assistente Zollim</h3>
+              <h3 className="font-semibold text-white">Atendente do Julian</h3>
               <p className="text-sm text-white/80">Online agora</p>
             </div>
           </div>
@@ -355,7 +355,7 @@ export const Quiz = () => {
                     className={`px-4 py-3 rounded-2xl shadow-sm transition-all duration-300 animate-fade-in ${
                       message.isBot
                         ? "bg-white text-gray-800 border border-gray-200"
-                        : "bg-green-600 text-white"
+                        : "bg-red-600 text-white"
                     }`}
                   >
                     <p className="text-sm">{message.text}</p>
@@ -433,7 +433,7 @@ export const Quiz = () => {
                 size="icon" 
                 variant="default"
                 disabled={!currentInput.trim() || isLoading}
-                className="bg-green-600 text-white hover:bg-green-700"
+                className="bg-red-600 text-white hover:bg-red-700"
               >
                 <Send className="w-4 h-4" />
               </Button>
