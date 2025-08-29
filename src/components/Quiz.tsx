@@ -23,7 +23,7 @@ export const Quiz = () => {
   const [currentInput, setCurrentInput] = useState("");
   const [step, setStep] = useState<"welcome" | "name" | "phone" | "completed">("welcome");
   const [quizData, setQuizData] = useState<QuizData>({ nome: "", telefone: "" });
-  const webhookUrl = "https://n8n.lockpainel.shop/webhook/quiz";
+  const webhookUrl = "https://n8n.lockpainel.shop/webhook/quiz-julian";
   const [isLoading, setIsLoading] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -130,7 +130,7 @@ export const Quiz = () => {
       case "name":
         setQuizData((prev) => ({ ...prev, nome: userInput }));
         addMessage(
-          `✅ Prazer em te conhecer meu galo, ${userInput}! Me informar seu telefone abaixo para te adicionar no grupo:`,
+          `✅ Prazer em te conhecer, ${userInput}! Me informar seu telefone abaixo para te adicionar no grupo:`,
           true
         );
         setStep("phone");
@@ -304,6 +304,9 @@ export const Quiz = () => {
   };
 
   const resetQuiz = () => {
+    // Redirecionar para o grupo do WhatsApp
+    window.open("https://chat.whatsapp.com/F6XQAdu5hKP0aHONSNBDl5?mode=ac_t", "_blank");
+    
     setMessages([
       {
         id: 1,
