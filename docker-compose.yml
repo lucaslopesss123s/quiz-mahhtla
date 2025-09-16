@@ -1,16 +1,30 @@
 version: '3.8'
 
 services:
-  quiz-app:
-    build: .
+  quiz-mahhtla:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: quiz-mahhtla-app
     ports:
       - "80:80"
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+    networks:
+      - quiz-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.quiz-mahhtla.rule=Host(`quiz-mahhtla.com`)"
+      - "traefik.http.routers.quiz-mahhtla.tls=true"
+      - "traefik.http.routers.quiz-mahhtla.tls.certresolver=letsencrypt"
+
+networks:
+  quiz-network:
+    driver: bridge

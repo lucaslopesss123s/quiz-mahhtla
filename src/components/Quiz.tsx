@@ -23,7 +23,7 @@ export const Quiz = () => {
   const [currentInput, setCurrentInput] = useState("");
   const [step, setStep] = useState<"welcome" | "name" | "phone" | "completed">("welcome");
   const [quizData, setQuizData] = useState<QuizData>({ nome: "", telefone: "" });
-  const webhookUrl = "https://n8n.lockpainel.shop/webhook/quiz-julian";
+  const webhookUrl = "https://n8n.lockpainel.shop/webhook/mahhtla";
   const [isLoading, setIsLoading] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -305,7 +305,7 @@ export const Quiz = () => {
 
   const resetQuiz = () => {
     // Redirecionar para o grupo do WhatsApp
-    window.open("https://chat.whatsapp.com/F6XQAdu5hKP0aHONSNBDl5?mode=ac_t", "_blank");
+    window.open("https://chat.whatsapp.com/KRsXK9gg0d3BQdBd8RM9Yh", "_blank");
     
     setMessages([
       {
@@ -335,7 +335,7 @@ export const Quiz = () => {
               <img src="/profile-image.jpeg" alt="Assistente" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">Atendente do Julian</h3>
+              <h3 className="font-semibold text-white">Atendente do Mahhtla</h3>
               <p className="text-sm text-white/80">Online agora</p>
             </div>
           </div>
